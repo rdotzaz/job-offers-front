@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:oferty_pracy/controller/home/controller.dart';
+import 'package:oferty_pracy/model/offer.dart';
+import 'package:oferty_pracy/view/widgets/async_widget.dart';
 import 'package:oferty_pracy/view/widgets/cupertino_blur.dart';
 import 'package:oferty_pracy/view/widgets/mesh_background.dart';
 
@@ -16,7 +19,11 @@ class HomePage extends StatelessWidget {
         SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
-            children: [TopBar(), MainPage(height: height, width: width)],
+            children: [
+              const TopBar(),
+              MainPage(height: height, width: width),
+              const AboutBottomBar()
+            ],
           ),
         )
       ],
@@ -24,11 +31,39 @@ class HomePage extends StatelessWidget {
   }
 }
 
+class AboutBottomBar extends StatelessWidget {
+  const AboutBottomBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(15),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text(
+            'Copyright 2024. All rights reserved',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          SizedBox(
+            width: 50,
+          ),
+          Text(
+            'Made with Flutter',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class MainPage extends StatelessWidget {
-  const MainPage({super.key, required this.height, required this.width});
+  MainPage({super.key, required this.height, required this.width});
 
   final double height;
   final double width;
+  final HomeController controller = HomeController();
 
   @override
   Widget build(BuildContext context) {
@@ -51,14 +86,27 @@ class MainPage extends StatelessWidget {
           child: Column(
             children: [
               const NewOffersLabel(),
-              FilterBar(),
+              SizedBox(
+                  height: 50, child: CityFilterBar(controller: controller)),
+              SizedBox(
+                  height: 50, child: PositionFilterBar(controller: controller)),
               SingleChildScrollView(
                 physics: const NeverScrollableScrollPhysics(),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) => WorkOfferCard(),
-                  itemCount: 10,
-                  scrollDirection: Axis.vertical,
+                child: AsyncWidget(
+                  asyncAction: controller.fetchOffers(),
+                  onWaiting: ListView.builder(
+                      padding: const EdgeInsets.all(0.0),
+                      itemCount: 5,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, _) => WaitingOfferCard()),
+                  onSuccess: (data) => ListView.builder(
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) =>
+                        WorkOfferCard(offer: data[index]),
+                    itemCount: data.length,
+                    scrollDirection: Axis.vertical,
+                  ),
                 ),
               ),
             ],
@@ -111,10 +159,10 @@ class NewOffersLabel extends StatelessWidget {
   }
 }
 
-class FilterBar extends StatelessWidget {
-  const FilterBar({
-    super.key,
-  });
+class CityFilterBar extends StatelessWidget {
+  const CityFilterBar({super.key, required this.controller});
+
+  final HomeController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -124,44 +172,73 @@ class FilterBar extends StatelessWidget {
         const Padding(
             padding: EdgeInsets.all(8.0),
             child: Text(
-              'Filtruj',
+              'Filtruj po miastach',
               style: TextStyle(
                 color: Colors.grey,
                 fontSize: 18,
               ),
             )),
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FilterButton(
-                isClicked: false,
-                onPressed: () {},
-                text: 'One',
+        Expanded(
+          child: AsyncWidget(
+              asyncAction: controller.fetchCityFilters(),
+              onWaiting: Container(),
+              onSuccess: (data) => ListView.builder(
+                    itemBuilder: (context, index) => FilterButton(
+                      text: data[index],
+                      onPressed: () {},
+                      isClicked: controller.isCityFilterClikced(index),
+                    ),
+                    itemCount: data.length,
+                    scrollDirection: Axis.horizontal,
+                  )),
+        )
+      ],
+    );
+  }
+}
+
+class PositionFilterBar extends StatelessWidget {
+  const PositionFilterBar({super.key, required this.controller});
+
+  final HomeController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Filtruj po pozycjach',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 18,
               ),
-              FilterButton(
-                isClicked: false,
-                onPressed: () {},
-                text: 'Two',
-              ),
-              FilterButton(
-                isClicked: true,
-                onPressed: () {},
-                text: 'Three',
-              ),
-            ],
-          ),
-        ),
+            )),
+        Expanded(
+          child: AsyncWidget(
+              asyncAction: controller.fetchPositionFilters(),
+              onWaiting: Container(),
+              onSuccess: (data) => ListView.builder(
+                    itemBuilder: (context, index) => FilterButton(
+                      text: data[index],
+                      onPressed: () {},
+                      isClicked: controller.isPositionFilterClikced(index),
+                    ),
+                    itemCount: data.length,
+                    scrollDirection: Axis.horizontal,
+                  )),
+        )
       ],
     );
   }
 }
 
 class WorkOfferCard extends StatelessWidget {
-  const WorkOfferCard({
-    super.key,
-  });
+  const WorkOfferCard({super.key, required this.offer});
+
+  final Offer offer;
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +264,7 @@ class WorkOfferCard extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             Text(
-              'Software Developer',
+              offer.position,
               style: TextStyle(fontSize: 24, color: Colors.black),
             ),
             SizedBox(
@@ -198,7 +275,7 @@ class WorkOfferCard extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             Text(
-              'Nokia',
+              offer.company,
               style: TextStyle(fontSize: 16, color: Colors.black),
             ),
             SizedBox(
@@ -209,7 +286,40 @@ class WorkOfferCard extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             Text(
-              'Bardzo rozwoje stanowisko...fsdfsd ...f sdjfhksjdhf psdofkpsodjfpojds jlskdfjlskdjflj sdslfjksld \n jsldkfjlsdjflksd',
+              offer.description,
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            Text(
+              'Telefon',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            Text(
+              offer.phoneNumber,
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            Text(
+              'Email',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            Text(
+              offer.email,
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            Text(
+              'Data wygaśniecia oferty pracy',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            Text(
+              '${offer.endDate.day}/${offer.endDate.month}/${offer.endDate.year}',
               style: TextStyle(fontSize: 16, color: Colors.black),
             ),
           ],
@@ -322,5 +432,47 @@ class TopBarButton extends StatelessWidget {
                 color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ));
+  }
+}
+
+class WaitingOfferCard extends StatefulWidget {
+  const WaitingOfferCard({super.key});
+
+  @override
+  State<WaitingOfferCard> createState() => _WaitingOfferCardState();
+}
+
+class _WaitingOfferCardState extends State<WaitingOfferCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController animationController;
+  late Animation colorTween;
+
+  @override
+  void initState() {
+    animationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    colorTween = ColorTween(begin: Colors.white, end: Colors.grey.shade200)
+        .animate(animationController);
+    animationController.repeat(min: 0, max: 1, reverse: true);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+        animation: animationController,
+        builder: (context, _) => Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: colorTween.value),
+            padding: const EdgeInsets.all(8.0),
+            margin: const EdgeInsets.all(5.0),
+            height: 80));
   }
 }
