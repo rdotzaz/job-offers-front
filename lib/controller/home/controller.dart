@@ -1,6 +1,9 @@
+import 'package:oferty_pracy/controller/home/filter_bloc.dart';
 import 'package:oferty_pracy/model/offer.dart';
+import 'package:oferty_pracy/server/server_wrapper.dart';
 
 class HomeController {
+  final ServerWrapper _serverWrapper = ServerWrapper();
   final List<Offer> staticOffers = [
     Offer(
         id: "sokdjflskdjfl",
@@ -34,32 +37,41 @@ class HomeController {
         endDate: DateTime(2024, 12, 30, 15, 34))
   ];
 
-  Future<List<Offer>> fetchOffers() async {
+  List<String> cityFilters = [
+    "Wroclaw",
+    "Krakow",
+    "Warszawa",
+    "Poznan",
+    "Lodz",
+    "Gdansk",
+    "Szczecin"
+  ];
+  List<String> positionFilters = [
+    "Software Developer",
+    "Game Designer",
+    "Graphics Designer"
+  ];
+
+  Set<String> cityEnabledFilters = {};
+  Set<String> positionEnabledFilters = {};
+
+  Future<List<Offer>> fetchOffers(FilterState filterState) async {
     return await Future.delayed(const Duration(seconds: 2)).then((_) {
+      // return _serverWrapper.postOffers(filterState.cityFilters as List<String>,
+      //     filterState.positionFilters as List<String>);
       return staticOffers;
     });
   }
 
-  Future<List<String>> fetchCityFilters() async {
+  Future<List<String>> fetchCityFilters(FilterState filterState) async {
     return await Future.delayed(const Duration(seconds: 2)).then((_) {
-      return [
-        "Wroclaw",
-        "Krakow",
-        "Warszawa",
-        "Poznan",
-        "Lodz",
-        "Gdansk",
-        "Szczecin"
-      ];
+      return cityFilters; //_serverWrapper.getCities();
     });
   }
 
-  Future<List<String>> fetchPositionFilters() async {
+  Future<List<String>> fetchPositionFilters(FilterState filterState) async {
     return await Future.delayed(const Duration(seconds: 2)).then((_) {
-      return ["Software Developer", "Game Designer", "Graphics Designer"];
+      return positionFilters; //_serverWrapper.getPositions();
     });
   }
-
-  bool isCityFilterClikced(int index) => false;
-  bool isPositionFilterClikced(int index) => false;
 }

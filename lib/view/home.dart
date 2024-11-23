@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:oferty_pracy/controller/home/controller.dart';
+import 'package:oferty_pracy/controller/home/filter_bloc.dart';
 import 'package:oferty_pracy/model/offer.dart';
 import 'package:oferty_pracy/view/widgets/async_widget.dart';
 import 'package:oferty_pracy/view/widgets/cupertino_blur.dart';
@@ -69,50 +71,56 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLessThan550 = height < 550;
 
-    return Column(
-      children: [
-        MainHeader(isLessThan550: isLessThan550),
-        const SizedBox(
-          height: 200,
-        ),
-        Container(
-          margin: const EdgeInsets.all(8),
-          padding: const EdgeInsets.all(8),
-          width: width * 0.8,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-            color: Colors.white,
+    return MultiBlocProvider(
+      providers: [BlocProvider(create: (_) => FilterBloc())],
+      child: Column(
+        children: [
+          MainHeader(isLessThan550: isLessThan550),
+          const SizedBox(
+            height: 200,
           ),
-          child: Column(
-            children: [
-              const NewOffersLabel(),
-              SizedBox(
-                  height: 50, child: CityFilterBar(controller: controller)),
-              SizedBox(
-                  height: 50, child: PositionFilterBar(controller: controller)),
-              SingleChildScrollView(
-                physics: const NeverScrollableScrollPhysics(),
-                child: AsyncWidget(
-                  asyncAction: controller.fetchOffers(),
-                  onWaiting: ListView.builder(
-                      padding: const EdgeInsets.all(0.0),
-                      itemCount: 5,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, _) => WaitingOfferCard()),
-                  onSuccess: (data) => ListView.builder(
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) =>
-                        WorkOfferCard(offer: data[index]),
-                    itemCount: data.length,
-                    scrollDirection: Axis.vertical,
+          Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
+            width: width * 0.8,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              color: Colors.white,
+            ),
+            child: Column(
+              children: [
+                const NewOffersLabel(),
+                SizedBox(
+                    height: 50, child: CityFilterBar(controller: controller)),
+                SizedBox(
+                    height: 50,
+                    child: PositionFilterBar(controller: controller)),
+                SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: BlocBuilder<FilterBloc, FilterState>(
+                    builder: (_, filterState) => AsyncWidget(
+                      asyncAction: controller.fetchOffers(filterState),
+                      onWaiting: ListView.builder(
+                          padding: const EdgeInsets.all(0.0),
+                          itemCount: 5,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, _) => WaitingOfferCard()),
+                      onSuccess: (data) => ListView.builder(
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) =>
+                            WorkOfferCard(offer: data[index]),
+                        itemCount: data.length,
+                        scrollDirection: Axis.vertical,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        )
-      ],
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }
@@ -179,18 +187,22 @@ class CityFilterBar extends StatelessWidget {
               ),
             )),
         Expanded(
-          child: AsyncWidget(
-              asyncAction: controller.fetchCityFilters(),
-              onWaiting: Container(),
-              onSuccess: (data) => ListView.builder(
-                    itemBuilder: (context, index) => FilterButton(
-                      text: data[index],
-                      onPressed: () {},
-                      isClicked: controller.isCityFilterClikced(index),
-                    ),
-                    itemCount: data.length,
-                    scrollDirection: Axis.horizontal,
-                  )),
+          child: BlocBuilder<FilterBloc, FilterState>(
+            builder: (_, filterState) => AsyncWidget(
+                asyncAction: controller.fetchCityFilters(filterState),
+                onWaiting: Container(),
+                onSuccess: (data) => ListView.builder(
+                      itemBuilder: (context, index) => FilterButton(
+                          text: data[index],
+                          onPressed: () => context
+                              .read<FilterBloc>()
+                              .add(ToggleFilter(FilterType.city, data[index])),
+                          isClicked:
+                              filterState.cityFilters.contains(data[index])),
+                      itemCount: data.length,
+                      scrollDirection: Axis.horizontal,
+                    )),
+          ),
         )
       ],
     );
@@ -217,18 +229,22 @@ class PositionFilterBar extends StatelessWidget {
               ),
             )),
         Expanded(
-          child: AsyncWidget(
-              asyncAction: controller.fetchPositionFilters(),
-              onWaiting: Container(),
-              onSuccess: (data) => ListView.builder(
-                    itemBuilder: (context, index) => FilterButton(
-                      text: data[index],
-                      onPressed: () {},
-                      isClicked: controller.isPositionFilterClikced(index),
-                    ),
-                    itemCount: data.length,
-                    scrollDirection: Axis.horizontal,
-                  )),
+          child: BlocBuilder<FilterBloc, FilterState>(
+            builder: (_, filterState) => AsyncWidget(
+                asyncAction: controller.fetchPositionFilters(filterState),
+                onWaiting: Container(),
+                onSuccess: (data) => ListView.builder(
+                      itemBuilder: (context, index) => FilterButton(
+                        text: data[index],
+                        onPressed: () => context.read<FilterBloc>().add(
+                            ToggleFilter(FilterType.position, data[index])),
+                        isClicked:
+                            filterState.positionFilters.contains(data[index]),
+                      ),
+                      itemCount: data.length,
+                      scrollDirection: Axis.horizontal,
+                    )),
+          ),
         )
       ],
     );

@@ -20,7 +20,7 @@ class Offer {
       required this.creationDate,
       required this.endDate});
 
-  factory Offer.fromJson(Map<String, String> jsonData) {
+  factory Offer.fromJson(Map<String, dynamic> jsonData) {
     final creationDate = DateTime.parse(jsonData["creationDate"] as String);
     final endDate = DateTime.parse(jsonData["endDate"] as String);
     return Offer(
