@@ -13,7 +13,10 @@ class ServerWrapper {
 
   Future<List<Offer>> postOffers(
       List<String> cityFilters, List<String> positionFilters) async {
-    final body = {"cities": cityFilters, "positions": positionFilters};
+    final body = {
+      "cities": jsonEncode(cityFilters),
+      "positions": jsonEncode(positionFilters)
+    };
     final request = Request(
         method: RequestMethod.postMethod,
         path: "${getUrl()}/offers",
@@ -38,11 +41,14 @@ class ServerWrapper {
         print("Invalid response format: Missing offers");
         return [];
       }
-      final offers = body["offers"] as List<Map<String, dynamic>>;
-      return List<Offer>.from(offers.map((offer) => Offer.fromJson(offer)));
+
+      final offers = body["offers"] as List<dynamic>;
+      return List<Offer>.from(
+          offers.map((offer) => Offer.fromJson(offer as Map<String, dynamic>)));
     }
 
-    print("Status code: ${response.statusCode}");
+    print(
+        "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
     return [];
   }
 
@@ -59,10 +65,12 @@ class ServerWrapper {
         return [];
       }
 
-      return body["filters"] as List<String>;
+      final filters = body["filters"] as List<dynamic>;
+      return List<String>.from(filters.map((filter) => filter.toString()));
     }
 
-    print("Status code: ${response.statusCode}");
+    print(
+        "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
     return [];
   }
 
@@ -79,10 +87,12 @@ class ServerWrapper {
         return [];
       }
 
-      return body["filters"] as List<String>;
+      final filters = body["filters"] as List<dynamic>;
+      return List<String>.from(filters.map((filter) => filter.toString()));
     }
 
-    print("Status code: ${response.statusCode}");
+    print(
+        "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
     return [];
   }
 }

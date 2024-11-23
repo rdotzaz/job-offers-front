@@ -72,7 +72,7 @@ class MainPage extends StatelessWidget {
     final isLessThan550 = height < 550;
 
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => FilterBloc())],
+      providers: [BlocProvider(create: (_) => controller.getFilterBloc())],
       child: Column(
         children: [
           MainHeader(isLessThan550: isLessThan550),
@@ -98,8 +98,8 @@ class MainPage extends StatelessWidget {
                 SingleChildScrollView(
                   physics: const NeverScrollableScrollPhysics(),
                   child: BlocBuilder<FilterBloc, FilterState>(
-                    builder: (_, filterState) => AsyncWidget(
-                      asyncAction: controller.fetchOffers(filterState),
+                    builder: (_, __) => AsyncWidget(
+                      asyncAction: controller.fetchOffers(),
                       onWaiting: ListView.builder(
                           padding: const EdgeInsets.all(0.0),
                           itemCount: 5,
@@ -187,12 +187,12 @@ class CityFilterBar extends StatelessWidget {
               ),
             )),
         Expanded(
-          child: BlocBuilder<FilterBloc, FilterState>(
-            builder: (_, filterState) => AsyncWidget(
-                asyncAction: controller.fetchCityFilters(filterState),
-                onWaiting: Container(),
-                onSuccess: (data) => ListView.builder(
-                      itemBuilder: (context, index) => FilterButton(
+          child: AsyncWidget(
+              asyncAction: controller.fetchCityFilters(),
+              onWaiting: Container(),
+              onSuccess: (data) => BlocBuilder<FilterBloc, FilterState>(
+                    builder: (_, filterState) => ListView.builder(
+                      itemBuilder: (_, index) => FilterButton(
                           text: data[index],
                           onPressed: () => context
                               .read<FilterBloc>()
@@ -201,8 +201,8 @@ class CityFilterBar extends StatelessWidget {
                               filterState.cityFilters.contains(data[index])),
                       itemCount: data.length,
                       scrollDirection: Axis.horizontal,
-                    )),
-          ),
+                    ),
+                  )),
         )
       ],
     );
@@ -229,12 +229,12 @@ class PositionFilterBar extends StatelessWidget {
               ),
             )),
         Expanded(
-          child: BlocBuilder<FilterBloc, FilterState>(
-            builder: (_, filterState) => AsyncWidget(
-                asyncAction: controller.fetchPositionFilters(filterState),
-                onWaiting: Container(),
-                onSuccess: (data) => ListView.builder(
-                      itemBuilder: (context, index) => FilterButton(
+          child: AsyncWidget(
+              asyncAction: controller.fetchPositionFilters(),
+              onWaiting: Container(),
+              onSuccess: (data) => BlocBuilder<FilterBloc, FilterState>(
+                    builder: (_, filterState) => ListView.builder(
+                      itemBuilder: (_, index) => FilterButton(
                         text: data[index],
                         onPressed: () => context.read<FilterBloc>().add(
                             ToggleFilter(FilterType.position, data[index])),
@@ -243,8 +243,8 @@ class PositionFilterBar extends StatelessWidget {
                       ),
                       itemCount: data.length,
                       scrollDirection: Axis.horizontal,
-                    )),
-          ),
+                    ),
+                  )),
         )
       ],
     );

@@ -4,6 +4,7 @@ import 'package:oferty_pracy/server/server_wrapper.dart';
 
 class HomeController {
   final ServerWrapper _serverWrapper = ServerWrapper();
+  final FilterBloc _filterBloc = FilterBloc();
   final List<Offer> staticOffers = [
     Offer(
         id: "sokdjflskdjfl",
@@ -55,23 +56,25 @@ class HomeController {
   Set<String> cityEnabledFilters = {};
   Set<String> positionEnabledFilters = {};
 
-  Future<List<Offer>> fetchOffers(FilterState filterState) async {
+  FilterBloc getFilterBloc() => _filterBloc;
+
+  Future<List<Offer>> fetchOffers() async {
     return await Future.delayed(const Duration(seconds: 2)).then((_) {
-      // return _serverWrapper.postOffers(filterState.cityFilters as List<String>,
-      //     filterState.positionFilters as List<String>);
-      return staticOffers;
+      final state = _filterBloc.state;
+      return _serverWrapper.postOffers(
+          state.cityFilters.toList(), state.positionFilters.toList());
     });
   }
 
-  Future<List<String>> fetchCityFilters(FilterState filterState) async {
+  Future<List<String>> fetchCityFilters() async {
     return await Future.delayed(const Duration(seconds: 2)).then((_) {
-      return cityFilters; //_serverWrapper.getCities();
+      return _serverWrapper.getCities();
     });
   }
 
-  Future<List<String>> fetchPositionFilters(FilterState filterState) async {
+  Future<List<String>> fetchPositionFilters() async {
     return await Future.delayed(const Duration(seconds: 2)).then((_) {
-      return positionFilters; //_serverWrapper.getPositions();
+      return _serverWrapper.getPositions();
     });
   }
 }
