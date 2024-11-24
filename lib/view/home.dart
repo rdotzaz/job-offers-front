@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:oferty_pracy/controller/home/controller.dart';
 import 'package:oferty_pracy/controller/home/filter_bloc.dart';
+import 'package:oferty_pracy/controller/page_switch_bloc.dart';
 import 'package:oferty_pracy/model/offer.dart';
+import 'package:oferty_pracy/view/new_offer_page.dart';
 import 'package:oferty_pracy/view/widgets/async_widget.dart';
 import 'package:oferty_pracy/view/widgets/cupertino_blur.dart';
 import 'package:oferty_pracy/view/widgets/mesh_background.dart';
@@ -15,21 +17,56 @@ class HomePage extends StatelessWidget {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
-    return Stack(
-      children: [
-        const MeshBackground(),
-        SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              const TopBar(),
-              MainPage(height: height, width: width),
-              const AboutBottomBar()
-            ],
-          ),
-        )
-      ],
+    return BlocProvider(
+      create: (_) => PageSwitchBloc(),
+      child: Stack(
+        children: [
+          const MeshBackground(),
+          SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: BlocBuilder<PageSwitchBloc, PageName>(
+              builder: (_, pageName) => Column(
+                children: [
+                  TopBar(pageName: pageName),
+                  PagesWrapper(
+                      pageName: pageName, height: height, width: width),
+                  const AboutBottomBar()
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
     );
+  }
+}
+
+class PagesWrapper extends StatelessWidget {
+  const PagesWrapper(
+      {super.key,
+      required this.pageName,
+      required this.width,
+      required this.height});
+
+  final PageName pageName;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+        duration: const Duration(seconds: 1),
+        child: getPage(pageName, width, height));
+  }
+
+  Widget getPage(PageName pageName, double width, double heught) {
+    return switch (pageName) {
+      PageName.main => MainPage(height: height, width: width),
+      PageName.newOffer => NewOfferPage(width: width),
+      _ => Container(
+          color: Colors.white,
+        )
+    };
   }
 }
 
@@ -38,11 +75,11 @@ class AboutBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(15),
+    return const Padding(
+      padding: EdgeInsets.all(15),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Text(
             'Copyright 2024. All rights reserved',
             style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -344,9 +381,9 @@ class WorkOfferCard extends StatelessWidget {
 }
 
 class TopBar extends StatelessWidget {
-  const TopBar({
-    super.key,
-  });
+  TopBar({super.key, required this.pageName});
+
+  final PageName pageName;
 
   @override
   Widget build(BuildContext context) {
@@ -359,7 +396,8 @@ class TopBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             TextButton(
-              onPressed: () {},
+              onPressed: () =>
+                  context.read<PageSwitchBloc>().add(MainPageSwitchEvent()),
               style: TextButton.styleFrom(backgroundColor: Colors.transparent),
               child: const Row(
                 children: [
@@ -380,11 +418,13 @@ class TopBar extends StatelessWidget {
             ),
             TopBarButton(
               text: 'Nowa oferta pracy',
-              onPressed: () {},
+              onPressed: () =>
+                  context.read<PageSwitchBloc>().add(NewOfferPageSwitchEvent()),
             ),
             TopBarButton(
               text: 'O nas',
-              onPressed: () {},
+              onPressed: () =>
+                  context.read<PageSwitchBloc>().add(AboutPageSwitchEvent()),
             )
           ],
         ),

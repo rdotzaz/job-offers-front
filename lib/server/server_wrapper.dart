@@ -95,6 +95,37 @@ class ServerWrapper {
         "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
     return [];
   }
+
+  Future<Offer?> addNewOffer(Offer offer) async {
+    final body = {
+      "position": offer.position,
+      "company": offer.company,
+      "city": offer.city,
+      "description": offer.description,
+      "phoneNumber": offer.phoneNumber,
+      "email": offer.email
+    };
+    final request = Request(
+        method: RequestMethod.postMethod,
+        path: getUrl() + "/offer",
+        requestBody: body);
+
+    final response = await _executor.execute(request);
+
+    if (response.statusCode == 200) {
+      final body = response.responseBody;
+      if (body["offerId"] == null) {
+        print("Invalid response format: Missing offerId field");
+        return null;
+      }
+      final returnedOffer = offer..id = body["offerId"];
+      return returnedOffer;
+    }
+
+    print(
+        "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
+    return null;
+  }
 }
 
 enum RequestMethod { getMethod, postMethod, deleteMethod }

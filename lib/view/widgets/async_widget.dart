@@ -21,7 +21,7 @@ class AsyncWidget<T> extends StatelessWidget {
           } else if (snapshot.connectionState == ConnectionState.done) {
             return snapshot.data != null
                 ? onSuccess(snapshot.data!)
-                : _errorWidget("Null");
+                : _errorWidget("Missing null");
           }
           return _errorWidget(snapshot.error.toString());
         });

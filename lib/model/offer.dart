@@ -1,5 +1,5 @@
 class Offer {
-  final String id;
+  String id;
   final String position;
   final String company;
   final String city;
