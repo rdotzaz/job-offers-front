@@ -162,6 +162,22 @@ class ServerWrapper {
         "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
     return false;
   }
+
+  Future<bool> removeOffer(Offer offer) async {
+    final queryParams = {"offer_id": offer.id};
+    final request = Request.withContentTypeJson(
+        method: RequestMethod.deleteMethod,
+        path: '/offer',
+        queryParams: queryParams);
+    final response = await _executor.execute(request);
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+    print(
+        "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
+    return false;
+  }
 }
 
 enum RequestMethod { getMethod, postMethod, deleteMethod }

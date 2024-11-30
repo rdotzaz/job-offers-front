@@ -66,6 +66,7 @@ class NewOfferPageController {
 
     final newOffer = Offer(
         id: 'id',
+        ownerKey: UserWrapper.key,
         position: positionController.text,
         company: companyController.text,
         city: cityController.text,

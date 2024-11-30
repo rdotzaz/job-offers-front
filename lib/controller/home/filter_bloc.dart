@@ -18,6 +18,8 @@ class ToggleFilter extends BaseFilterEvent {
   ToggleFilter(this.filterType, this.filterName);
 }
 
+class RefreshFilter extends BaseFilterEvent {}
+
 class FilterBloc extends Bloc<BaseFilterEvent, FilterState> {
   FilterBloc() : super(FilterState({}, {})) {
     on<ToggleFilter>((event, emit) {
@@ -37,6 +39,11 @@ class FilterBloc extends Bloc<BaseFilterEvent, FilterState> {
       final newState = filterType == FilterType.city
           ? FilterState(filterSet, state.positionFilters)
           : FilterState(state.cityFilters, filterSet);
+      emit(newState);
+    });
+
+    on<RefreshFilter>((event, emit) {
+      final newState = FilterState(state.cityFilters, state.positionFilters);
       emit(newState);
     });
   }
