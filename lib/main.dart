@@ -4,8 +4,6 @@ import 'package:oferty_pracy/view/home.dart';
 
 void main() async {
   await HiveDatabaseAdapter.init();
-  // TODO - remove hardcode
-  HiveDatabaseAdapter.putApiKey("123456ab");
   runApp(const MyApp());
 }
 

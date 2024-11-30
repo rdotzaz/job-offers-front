@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:oferty_pracy/controller/new_offer/controller.dart';
-import 'package:oferty_pracy/controller/new_offer/submit_button_bloc.dart';
+import 'package:oferty_pracy/controller/submit_button_bloc.dart';
 import 'package:oferty_pracy/view/widgets/async_widget.dart';
 
 class NewOfferPage extends StatelessWidget {
-  const NewOfferPage({super.key, required this.width});
+  const NewOfferPage(
+      {super.key, required this.width, required this.isLoggedIn});
 
   final double width;
+  final bool isLoggedIn;
 
   @override
   Widget build(BuildContext context) {

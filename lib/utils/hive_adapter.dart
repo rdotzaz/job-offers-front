@@ -38,7 +38,7 @@ class HiveDatabaseAdapter {
     return apiKey;
   }
 
-  static void removeConfiguration() {
+  static void logout() {
     final userBox = Hive.box("user");
     if (!userBox.isOpen) {
       return;

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:oferty_pracy/model/offer.dart';
+import 'package:oferty_pracy/model/user.dart';
 import 'package:oferty_pracy/utils/user_wrapper.dart';
 
 class ServerWrapper {
@@ -15,10 +16,7 @@ class ServerWrapper {
       "positions": jsonEncode(positionFilters)
     };
     final request = Request.withContentTypeJson(
-        method: RequestMethod.postMethod,
-        path: "/offers",
-        requestBody: body,
-        queryParams: UserWrapper.toQueryMap());
+        method: RequestMethod.postMethod, path: "/offers", requestBody: body);
 
     final response = await _executor.execute(request);
 
@@ -51,10 +49,8 @@ class ServerWrapper {
   }
 
   Future<List<String>> getCities() async {
-    final request = Request(
-        method: RequestMethod.getMethod,
-        path: "/cityFilters",
-        queryParams: UserWrapper.toQueryMap());
+    final request =
+        Request(method: RequestMethod.getMethod, path: "/cityFilters");
 
     final response = await _executor.execute(request);
 
@@ -75,10 +71,8 @@ class ServerWrapper {
   }
 
   Future<List<String>> getPositions() async {
-    final request = Request(
-        method: RequestMethod.getMethod,
-        path: "/positionFilters",
-        queryParams: UserWrapper.toQueryMap());
+    final request =
+        Request(method: RequestMethod.getMethod, path: "/positionFilters");
 
     final response = await _executor.execute(request);
 
@@ -129,6 +123,42 @@ class ServerWrapper {
     print(
         "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
     return null;
+  }
+
+  Future<String> logIn(User user) async {
+    final body = {"login": user.login, "password": user.password};
+
+    final request = Request.withContentTypeJson(
+        method: RequestMethod.postMethod, path: '/login', requestBody: body);
+    final response = await _executor.execute(request);
+
+    if (response.statusCode == 200) {
+      final body = response.responseBody;
+      if (body["api_key"] == null) {
+        print("Invalid response format: Missing api_key field");
+        return "";
+      }
+      final apiKey = body["api_key"];
+      return apiKey.toString();
+    }
+    print(
+        "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
+    return "";
+  }
+
+  Future<bool> register(User user) async {
+    final body = {"login": user.login, "password": user.password};
+
+    final request = Request.withContentTypeJson(
+        method: RequestMethod.postMethod, path: '/register', requestBody: body);
+    final response = await _executor.execute(request);
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+    print(
+        "Status code: ${response.statusCode}, ${response.responseBody.toString()}");
+    return false;
   }
 }
 
