@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:oferty_pracy/controller/home/controller.dart';
 import 'package:oferty_pracy/controller/home/filter_bloc.dart';
+import 'package:oferty_pracy/controller/login_bloc.dart';
 import 'package:oferty_pracy/controller/page_switch_bloc.dart';
 import 'package:oferty_pracy/model/offer.dart';
 import 'package:oferty_pracy/view/new_offer_page.dart';
+import 'package:oferty_pracy/view/sign_up_in.dart';
 import 'package:oferty_pracy/view/widgets/async_widget.dart';
 import 'package:oferty_pracy/view/widgets/cupertino_blur.dart';
 import 'package:oferty_pracy/view/widgets/mesh_background.dart';
@@ -17,21 +19,29 @@ class HomePage extends StatelessWidget {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
-    return BlocProvider(
-      create: (_) => PageSwitchBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => PageSwitchBloc()),
+        BlocProvider(create: (_) => LoginBloc()),
+      ],
       child: Stack(
         children: [
           const MeshBackground(),
           SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: BlocBuilder<PageSwitchBloc, PageName>(
-              builder: (_, pageName) => Column(
-                children: [
-                  TopBar(pageName: pageName),
-                  PagesWrapper(
-                      pageName: pageName, height: height, width: width),
-                  const AboutBottomBar()
-                ],
+              builder: (_, pageName) => BlocBuilder<LoginBloc, bool>(
+                builder: (_, isLoggedIn) => Column(
+                  children: [
+                    TopBar(pageName: pageName, isLoggedIn: isLoggedIn),
+                    PagesWrapper(
+                        pageName: pageName,
+                        height: height,
+                        width: width,
+                        isLoggedIn: isLoggedIn),
+                    const AboutBottomBar()
+                  ],
+                ),
               ),
             ),
           )
@@ -46,11 +56,13 @@ class PagesWrapper extends StatelessWidget {
       {super.key,
       required this.pageName,
       required this.width,
-      required this.height});
+      required this.height,
+      required this.isLoggedIn});
 
   final PageName pageName;
   final double width;
   final double height;
+  final bool isLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -61,11 +73,10 @@ class PagesWrapper extends StatelessWidget {
 
   Widget getPage(PageName pageName, double width, double heught) {
     return switch (pageName) {
-      PageName.main => MainPage(height: height, width: width),
-      PageName.newOffer => NewOfferPage(width: width),
-      _ => Container(
-          color: Colors.white,
-        )
+      PageName.main =>
+        MainPage(height: height, width: width, isLoggedIn: isLoggedIn),
+      PageName.newOffer => NewOfferPage(width: width, isLoggedIn: isLoggedIn),
+      PageName.login => SignUpInPage(width: width, isLoggedIn: isLoggedIn)
     };
   }
 }
@@ -98,10 +109,15 @@ class AboutBottomBar extends StatelessWidget {
 }
 
 class MainPage extends StatelessWidget {
-  MainPage({super.key, required this.height, required this.width});
+  MainPage(
+      {super.key,
+      required this.height,
+      required this.width,
+      required this.isLoggedIn});
 
   final double height;
   final double width;
+  final bool isLoggedIn;
   final HomeController controller = HomeController();
 
   @override
@@ -381,9 +397,10 @@ class WorkOfferCard extends StatelessWidget {
 }
 
 class TopBar extends StatelessWidget {
-  TopBar({super.key, required this.pageName});
+  TopBar({super.key, required this.pageName, required this.isLoggedIn});
 
   final PageName pageName;
+  final bool isLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -422,9 +439,23 @@ class TopBar extends StatelessWidget {
                   context.read<PageSwitchBloc>().add(NewOfferPageSwitchEvent()),
             ),
             TopBarButton(
-              text: 'O nas',
+              text: 'Konto',
               onPressed: () =>
-                  context.read<PageSwitchBloc>().add(AboutPageSwitchEvent()),
+                  context.read<PageSwitchBloc>().add(LoginPageSwitchEvent()),
+            ),
+            Row(
+              children: [
+                Text(isLoggedIn ? "Zalogowny" : "Niezalgowany",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
+                if (isLoggedIn)
+                  TopBarButton(
+                      text: 'Wyloguj się',
+                      onPressed: () =>
+                          context.read<LoginBloc>().add(NotLoggedInEvent())),
+              ],
             )
           ],
         ),

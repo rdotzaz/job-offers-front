@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:oferty_pracy/controller/new_offer/submit_button_bloc.dart';
+import 'package:oferty_pracy/controller/submit_button_bloc.dart';
 import 'package:oferty_pracy/model/offer.dart';
-import 'package:oferty_pracy/server/server_wrapper.dart';
+import 'package:oferty_pracy/utils/server_wrapper.dart';
+import 'package:oferty_pracy/utils/user_wrapper.dart';
 
 class NewOfferPageController {
   final _submitButtonBloc = SubmitButtonBloc();

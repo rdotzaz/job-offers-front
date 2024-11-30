@@ -2,13 +2,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 abstract class BaseSwitchPageEvent {}
 
-enum PageName { main, newOffer, about }
+enum PageName { main, newOffer, login }
 
 class MainPageSwitchEvent extends BaseSwitchPageEvent {}
 
 class NewOfferPageSwitchEvent extends BaseSwitchPageEvent {}
 
-class AboutPageSwitchEvent extends BaseSwitchPageEvent {}
+class LoginPageSwitchEvent extends BaseSwitchPageEvent {}
 
 class PageSwitchBloc extends Bloc<BaseSwitchPageEvent, PageName> {
   PageSwitchBloc() : super(PageName.main) {
@@ -20,9 +20,9 @@ class PageSwitchBloc extends Bloc<BaseSwitchPageEvent, PageName> {
       if (state == PageName.newOffer) return;
       emit(PageName.newOffer);
     });
-    on<AboutPageSwitchEvent>((event, emit) {
-      if (state == PageName.about) return;
-      emit(PageName.about);
+    on<LoginPageSwitchEvent>((event, emit) {
+      if (state == PageName.login) return;
+      emit(PageName.login);
     });
   }
 }

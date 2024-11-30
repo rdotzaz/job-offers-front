@@ -1,6 +1,6 @@
 import 'package:oferty_pracy/controller/home/filter_bloc.dart';
 import 'package:oferty_pracy/model/offer.dart';
-import 'package:oferty_pracy/server/server_wrapper.dart';
+import 'package:oferty_pracy/utils/server_wrapper.dart';
 
 class HomeController {
   final ServerWrapper _serverWrapper = ServerWrapper();
