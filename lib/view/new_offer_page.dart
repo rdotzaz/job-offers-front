@@ -13,6 +13,14 @@ class NewOfferPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!isLoggedIn) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Center(child: Text('Musisz się zalogować aby dodać ofertę')),
+        ),
+      );
+    }
     return Card(
       child: Container(
         margin: const EdgeInsets.all(8),

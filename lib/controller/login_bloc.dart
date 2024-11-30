@@ -12,7 +12,7 @@ class LoggedInEvent extends BaseLoginEvent {
 class NotLoggedInEvent extends BaseLoginEvent {}
 
 class LoginBloc extends Bloc<BaseLoginEvent, bool> {
-  LoginBloc() : super(false) {
+  LoginBloc() : super(HiveDatabaseAdapter.isUserLoggedIn()) {
     on<LoggedInEvent>((event, emit) {
       HiveDatabaseAdapter.putApiKey(event.apiKey);
       emit(true);

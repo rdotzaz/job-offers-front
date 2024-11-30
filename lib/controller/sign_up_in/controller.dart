@@ -71,6 +71,8 @@ class SignInController extends BaseLoginController {
     final user = User(loginController.text, passwordController.text);
     final apiKey = await _serverWrapper.logIn(user);
     if (apiKey.isNotEmpty) {
+      loginController.clear();
+      passwordController.clear();
       _submitButtonBloc.add(SuccessEvent());
       context.read<LoginBloc>().add(LoggedInEvent(apiKey: apiKey));
     } else {
@@ -99,6 +101,8 @@ class SignUpController extends BaseLoginController {
     final user = User(loginController.text, passwordController.text);
     final success = await _serverWrapper.register(user);
     if (success) {
+      loginController.clear();
+      passwordController.clear();
       _submitButtonBloc.add(SuccessEvent());
     } else {
       _submitButtonBloc.add(FailedEvent());
