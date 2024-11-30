@@ -5,6 +5,7 @@ import 'package:oferty_pracy/controller/home/filter_bloc.dart';
 import 'package:oferty_pracy/controller/login_bloc.dart';
 import 'package:oferty_pracy/controller/page_switch_bloc.dart';
 import 'package:oferty_pracy/model/offer.dart';
+import 'package:oferty_pracy/utils/user_wrapper.dart';
 import 'package:oferty_pracy/view/new_offer_page.dart';
 import 'package:oferty_pracy/view/sign_up_in.dart';
 import 'package:oferty_pracy/view/widgets/async_widget.dart';
@@ -123,6 +124,7 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isLessThan550 = height < 550;
+    final apiKey = UserWrapper.isLoggedIn() ? UserWrapper.key : "";
 
     return MultiBlocProvider(
       providers: [BlocProvider(create: (_) => controller.getFilterBloc())],
@@ -161,8 +163,10 @@ class MainPage extends StatelessWidget {
                           itemBuilder: (context, _) => WaitingOfferCard()),
                       onSuccess: (data) => ListView.builder(
                         shrinkWrap: true,
-                        itemBuilder: (context, index) =>
-                            WorkOfferCard(offer: data[index]),
+                        itemBuilder: (context, index) => WorkOfferCard(
+                            offer: data[index],
+                            apiKey: apiKey,
+                            controller: controller),
                         itemCount: data.length,
                         scrollDirection: Axis.vertical,
                       ),
@@ -305,9 +309,15 @@ class PositionFilterBar extends StatelessWidget {
 }
 
 class WorkOfferCard extends StatelessWidget {
-  const WorkOfferCard({super.key, required this.offer});
+  const WorkOfferCard(
+      {super.key,
+      required this.offer,
+      required this.apiKey,
+      required this.controller});
 
   final Offer offer;
+  final String apiKey;
+  final HomeController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -325,72 +335,81 @@ class WorkOfferCard extends StatelessWidget {
                   blurRadius: 5,
                   spreadRadius: 3)
             ]),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Stanowisko',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Stanowisko',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  offer.position,
+                  style: TextStyle(fontSize: 24, color: Colors.black),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Text(
+                  'Firma',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  offer.company,
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Text(
+                  'Opis',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  offer.description,
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Text(
+                  'Telefon',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  offer.phoneNumber,
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Text(
+                  'Email',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  offer.email,
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Text(
+                  'Data wygaśniecia oferty pracy',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  '${offer.endDate.day}/${offer.endDate.month}/${offer.endDate.year}',
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+              ],
             ),
-            Text(
-              offer.position,
-              style: TextStyle(fontSize: 24, color: Colors.black),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Firma',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            Text(
-              offer.company,
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Opis',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            Text(
-              offer.description,
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Telefon',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            Text(
-              offer.phoneNumber,
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Email',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            Text(
-              offer.email,
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Data wygaśniecia oferty pracy',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            Text(
-              '${offer.endDate.day}/${offer.endDate.month}/${offer.endDate.year}',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
+            if (apiKey.isNotEmpty && offer.ownerKey == apiKey)
+              ElevatedButton(
+                  onPressed: () => controller.removeOffer(context, offer),
+                  child: Text('Usuń ofertę'))
           ],
         ));
   }
