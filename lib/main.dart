@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:oferty_pracy/utils/hive_adapter.dart';
 import 'package:oferty_pracy/view/home.dart';
 
-void main() {
+void main() async {
+  await HiveDatabaseAdapter.init();
+  // TODO - remove hardcode
+  HiveDatabaseAdapter.putApiKey("123456ab");
   runApp(const MyApp());
 }
 

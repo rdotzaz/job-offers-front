@@ -3,13 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:oferty_pracy/model/offer.dart';
+import 'package:oferty_pracy/utils/user_wrapper.dart';
 
 class ServerWrapper {
   final RequestExecutor _executor = RequestExecutor();
-
-  void initConnection() {}
-  String getUrl() =>
-      "https://71a36674-7115-47d3-b5a4-627f135438c1.mock.pstmn.io";
 
   Future<List<Offer>> postOffers(
       List<String> cityFilters, List<String> positionFilters) async {
@@ -17,10 +14,11 @@ class ServerWrapper {
       "cities": jsonEncode(cityFilters),
       "positions": jsonEncode(positionFilters)
     };
-    final request = Request(
+    final request = Request.withContentTypeJson(
         method: RequestMethod.postMethod,
-        path: "${getUrl()}/offers",
-        requestBody: body);
+        path: "/offers",
+        requestBody: body,
+        queryParams: UserWrapper.toQueryMap());
 
     final response = await _executor.execute(request);
 
@@ -54,7 +52,9 @@ class ServerWrapper {
 
   Future<List<String>> getCities() async {
     final request = Request(
-        method: RequestMethod.getMethod, path: getUrl() + "/cityFilters");
+        method: RequestMethod.getMethod,
+        path: "/cityFilters",
+        queryParams: UserWrapper.toQueryMap());
 
     final response = await _executor.execute(request);
 
@@ -76,7 +76,9 @@ class ServerWrapper {
 
   Future<List<String>> getPositions() async {
     final request = Request(
-        method: RequestMethod.getMethod, path: getUrl() + "/positionFilters");
+        method: RequestMethod.getMethod,
+        path: "/positionFilters",
+        queryParams: UserWrapper.toQueryMap());
 
     final response = await _executor.execute(request);
 
@@ -98,6 +100,7 @@ class ServerWrapper {
 
   Future<Offer?> addNewOffer(Offer offer) async {
     final body = {
+      "apiKey": UserWrapper.key,
       "position": offer.position,
       "company": offer.company,
       "city": offer.city,
@@ -107,8 +110,9 @@ class ServerWrapper {
     };
     final request = Request(
         method: RequestMethod.postMethod,
-        path: getUrl() + "/offer",
-        requestBody: body);
+        path: "/offer",
+        requestBody: body,
+        queryParams: UserWrapper.toQueryMap());
 
     final response = await _executor.execute(request);
 
@@ -133,6 +137,7 @@ enum RequestMethod { getMethod, postMethod, deleteMethod }
 class Request {
   final RequestMethod method;
   final String path;
+  final Map<String, String> queryParams;
   final Map<String, String> headers;
   final Map<String, dynamic> requestBody;
 
@@ -140,7 +145,25 @@ class Request {
       {required this.method,
       required this.path,
       this.requestBody = const {},
+      this.queryParams = const {},
       this.headers = const {}});
+
+  Request.withAcceptJson(
+      {required this.method,
+      required this.path,
+      this.requestBody = const {},
+      this.queryParams = const {},
+      this.headers = const {"Accept": "application/json"}});
+
+  Request.withContentTypeJson(
+      {required this.method,
+      required this.path,
+      this.requestBody = const {},
+      this.queryParams = const {},
+      this.headers = const {
+        "Accept": "application/json",
+        "ContentType": "application/json"
+      }});
 }
 
 class ServerResponse {
@@ -151,9 +174,12 @@ class ServerResponse {
 }
 
 class RequestExecutor {
+  String getUrl() => "71a36674-7115-47d3-b5a4-627f135438c1.mock.pstmn.io";
+  //"localhost:8000";
+
   Future<ServerResponse> execute(Request request) async {
     try {
-      final url = Uri.parse(request.path);
+      final url = Uri.https(getUrl(), request.path, request.queryParams);
       Response? response;
       switch (request.method) {
         case RequestMethod.getMethod:
