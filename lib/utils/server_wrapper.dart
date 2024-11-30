@@ -11,12 +11,14 @@ class ServerWrapper {
 
   Future<List<Offer>> postOffers(
       List<String> cityFilters, List<String> positionFilters) async {
-    final body = {
-      "cities": jsonEncode(cityFilters),
-      "positions": jsonEncode(positionFilters)
+    final queryParams = {
+      if (cityFilters.isNotEmpty) "cities": cityFilters.join(","),
+      if (cityFilters.isNotEmpty) "positions": positionFilters.join(",")
     };
     final request = Request.withContentTypeJson(
-        method: RequestMethod.postMethod, path: "/offers", requestBody: body);
+        method: RequestMethod.getMethod,
+        path: "/offers",
+        queryParams: queryParams);
 
     final response = await _executor.execute(request);
 
