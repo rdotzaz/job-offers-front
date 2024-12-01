@@ -50,6 +50,20 @@ class SignInForm extends StatefulWidget {
 class _SignInFormState extends State<SignInForm> {
   final _controller = SignInController();
 
+  @override
+  void initState() {
+    _controller.loginController.addListener(() {
+      _controller.loginErrorTest =
+          _notEmptyValidation(_controller.loginController.text);
+    });
+
+    _controller.passwordController.addListener(() {
+      _controller.passwordErrorTest =
+          _notEmptyValidation(_controller.passwordController.text);
+    });
+    super.initState();
+  }
+
   String? _notEmptyValidation(String text) {
     if (text.isEmpty) {
       return "Pole nie moze być puste";
@@ -57,59 +71,59 @@ class _SignInFormState extends State<SignInForm> {
     return null;
   }
 
+  final List<FocusNode> _focusNodes = List.generate(2, (_) => FocusNode());
+
   @override
   Widget build(BuildContext context) {
     final isLoggedIn = widget.isLoggedIn;
     return BlocProvider(
       create: (_) => _controller.getSubmitBloc(),
-      child: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Text(
-              'Logowanie',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold),
+      child: FocusTraversalGroup(
+        policy: WidgetOrderTraversalPolicy(),
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Text(
+                'Logowanie',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          TextField(
-            controller: _controller.loginController,
-            enabled: !isLoggedIn,
-            decoration: InputDecoration(
-                labelText: "Podaj login",
-                errorText: _controller.loginErrorTest,
-                border: OutlineInputBorder()),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          TextField(
-            controller: _controller.passwordController,
-            obscureText: true,
-            enabled: !isLoggedIn,
-            decoration: InputDecoration(
-                labelText: "Podaj hasłow",
-                errorText: _controller.passwordErrorTest,
-                border: OutlineInputBorder()),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          Center(child: SubmitButton(controller: _controller))
-        ],
+            TextField(
+              controller: _controller.loginController,
+              enabled: !isLoggedIn,
+              focusNode: _focusNodes[0],
+              onEditingComplete: () =>
+                  FocusScope.of(context).requestFocus(_focusNodes[1]),
+              decoration: InputDecoration(
+                  labelText: "Podaj login",
+                  errorText: _controller.loginErrorTest,
+                  border: OutlineInputBorder()),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            TextField(
+              controller: _controller.passwordController,
+              obscureText: true,
+              enabled: !isLoggedIn,
+              focusNode: _focusNodes[1],
+              decoration: InputDecoration(
+                  labelText: "Podaj hasłow",
+                  errorText: _controller.passwordErrorTest,
+                  border: OutlineInputBorder()),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            Center(child: SubmitButton(controller: _controller))
+          ],
+        ),
       ),
     );
-  }
-}
-
-class SignInButton extends StatelessWidget {
-  const SignInButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
 
@@ -125,6 +139,20 @@ class SignUpForm extends StatefulWidget {
 class _SignUpFormState extends State<SignUpForm> {
   final _controller = SignUpController();
 
+  @override
+  void initState() {
+    _controller.loginController.addListener(() {
+      _controller.loginErrorTest =
+          _notEmptyValidation(_controller.loginController.text);
+    });
+
+    _controller.passwordController.addListener(() {
+      _controller.passwordErrorTest =
+          _notEmptyValidation(_controller.passwordController.text);
+    });
+    super.initState();
+  }
+
   String? _notEmptyValidation(String text) {
     if (text.isEmpty) {
       return "Pole nie moze być puste";
@@ -132,51 +160,60 @@ class _SignUpFormState extends State<SignUpForm> {
     return null;
   }
 
+  final List<FocusNode> _focusNodes = List.generate(2, (_) => FocusNode());
+
   @override
   Widget build(BuildContext context) {
     final isLoggedIn = widget.isLoggedIn;
     return BlocProvider(
       create: (_) => _controller.getSubmitBloc(),
-      child: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Text(
-              'Utwórz nowe konto',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold),
+      child: FocusTraversalGroup(
+        policy: WidgetOrderTraversalPolicy(),
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Text(
+                'Utwórz nowe konto',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          TextField(
-            controller: _controller.loginController,
-            enabled: !isLoggedIn,
-            decoration: InputDecoration(
-                labelText: "Podaj login",
-                errorText: _controller.loginErrorTest,
-                border: OutlineInputBorder()),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          TextField(
-            controller: _controller.passwordController,
-            enabled: !isLoggedIn,
-            obscureText: true,
-            decoration: InputDecoration(
-                labelText: "Podaj hasło",
-                errorText: _controller.passwordErrorTest,
-                border: OutlineInputBorder()),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          Center(
-              child: SubmitButton(
-            controller: _controller,
-          ))
-        ],
+            TextField(
+              controller: _controller.loginController,
+              enabled: !isLoggedIn,
+              focusNode: _focusNodes[0],
+              onEditingComplete: () =>
+                  FocusScope.of(context).requestFocus(_focusNodes[1]),
+              decoration: InputDecoration(
+                  labelText: "Podaj login",
+                  errorText: _controller.loginErrorTest,
+                  border: OutlineInputBorder()),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            TextField(
+              controller: _controller.passwordController,
+              enabled: !isLoggedIn,
+              obscureText: true,
+              focusNode: _focusNodes[1],
+              decoration: InputDecoration(
+                  labelText: "Podaj hasło",
+                  errorText: _controller.passwordErrorTest,
+                  border: OutlineInputBorder()),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            Center(
+                child: SubmitButton(
+              controller: _controller,
+            ))
+          ],
+        ),
       ),
     );
   }
