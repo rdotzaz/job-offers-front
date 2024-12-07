@@ -65,7 +65,7 @@ class _SignInFormState extends State<SignInForm> {
   }
 
   String? _notEmptyValidation(String text) {
-    if (text.isEmpty) {
+    if (text.isEmpty && widget.isLoggedIn) {
       return "Pole nie moze być puste";
     }
     return null;
@@ -119,7 +119,8 @@ class _SignInFormState extends State<SignInForm> {
             SizedBox(
               height: 15,
             ),
-            Center(child: SubmitButton(controller: _controller))
+            if (!isLoggedIn)
+              Center(child: SubmitButton(controller: _controller))
           ],
         ),
       ),
@@ -154,7 +155,7 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
   String? _notEmptyValidation(String text) {
-    if (text.isEmpty) {
+    if (text.isEmpty && widget.isLoggedIn) {
       return "Pole nie moze być puste";
     }
     return null;
@@ -208,10 +209,11 @@ class _SignUpFormState extends State<SignUpForm> {
             SizedBox(
               height: 15,
             ),
-            Center(
-                child: SubmitButton(
-              controller: _controller,
-            ))
+            if (!isLoggedIn)
+              Center(
+                  child: SubmitButton(
+                controller: _controller,
+              ))
           ],
         ),
       ),

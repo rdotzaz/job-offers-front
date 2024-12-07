@@ -98,6 +98,12 @@ class _NewOfferFormState extends State<NewOfferForm> {
             _phoneNumerValidation(_controller.phoneNumberController.text);
       });
     });
+    _controller.emailController.addListener(() {
+      setState(() {
+        _controller.emailErrorTest =
+            _emailValidation(_controller.emailController.text);
+      });
+    });
     super.initState();
   }
 
@@ -115,6 +121,18 @@ class _NewOfferFormState extends State<NewOfferForm> {
     final RegExp phoneNumberRegex = RegExp(r'^\+\d+$');
     if (!phoneNumberRegex.hasMatch(text)) {
       return "Niepoprawny format numeru telefonu";
+    }
+    return null;
+  }
+
+  String? _emailValidation(String text) {
+    if (text.isEmpty) {
+      return "Pole nie moze być puste";
+    }
+    final RegExp emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (!emailRegex.hasMatch(text)) {
+      return "Niepoprawny format adresu email";
     }
     return null;
   }
@@ -177,8 +195,10 @@ class _NewOfferFormState extends State<NewOfferForm> {
         ),
         TextField(
           controller: _controller.emailController,
-          decoration: const InputDecoration(
-              labelText: "Podaj adres email", border: OutlineInputBorder()),
+          decoration: InputDecoration(
+              labelText: "Podaj adres email",
+              errorText: _controller.emailErrorTest,
+              border: OutlineInputBorder()),
         ),
         SizedBox(
           height: 15,

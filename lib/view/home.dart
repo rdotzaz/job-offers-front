@@ -166,7 +166,8 @@ class MainPage extends StatelessWidget {
                         itemBuilder: (context, index) => WorkOfferCard(
                             offer: data[index],
                             apiKey: apiKey,
-                            controller: controller),
+                            controller: controller,
+                            width: width * 0.8),
                         itemCount: data.length,
                         scrollDirection: Axis.vertical,
                       ),
@@ -313,11 +314,13 @@ class WorkOfferCard extends StatelessWidget {
       {super.key,
       required this.offer,
       required this.apiKey,
-      required this.controller});
+      required this.controller,
+      required this.width});
 
   final Offer offer;
   final String apiKey;
   final HomeController controller;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -364,12 +367,29 @@ class WorkOfferCard extends StatelessWidget {
                   height: 15,
                 ),
                 Text(
-                  'Opis',
+                  'Miasto',
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 Text(
-                  offer.description,
+                  offer.city,
                   style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Text(
+                  'Opis',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Container(
+                  width: width * 0.7,
+                  child: Text(
+                    offer.description,
+                    softWrap: true,
+                    textWidthBasis: TextWidthBasis.parent,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
                 ),
                 SizedBox(
                   height: 15,
@@ -392,18 +412,7 @@ class WorkOfferCard extends StatelessWidget {
                 Text(
                   offer.email,
                   style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
-                SizedBox(
-                  height: 15,
-                ),
-                Text(
-                  'Data wygaśniecia oferty pracy',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                Text(
-                  '${offer.endDate.day}/${offer.endDate.month}/${offer.endDate.year}',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
+                )
               ],
             ),
             if (apiKey.isNotEmpty && offer.ownerKey == apiKey)

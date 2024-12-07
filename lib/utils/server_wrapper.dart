@@ -12,8 +12,8 @@ class ServerWrapper {
   Future<List<Offer>> postOffers(
       List<String> cityFilters, List<String> positionFilters) async {
     final queryParams = {
-      if (cityFilters.isNotEmpty) "cities": cityFilters.join(","),
-      if (cityFilters.isNotEmpty) "positions": positionFilters.join(",")
+      if (cityFilters.isNotEmpty) "city": cityFilters.join(","),
+      if (positionFilters.isNotEmpty) "position": positionFilters.join(",")
     };
     final request = Request.withContentTypeJson(
         method: RequestMethod.getMethod,
@@ -24,22 +24,10 @@ class ServerWrapper {
 
     if (response.statusCode == 200) {
       final body = response.responseBody;
-      if (body["filters"] == null) {
-        print("Invalid response format: Missing filters field");
-        return [];
-      }
-
-      final filters = body["filters"] as Map<String, dynamic>;
-      if (filters["cities"] == null || filters["positions"] == null) {
-        print("Invalid response format: Missing cities and positions");
-        return [];
-      }
-
       if (body["offers"] == null) {
-        print("Invalid response format: Missing offers");
+        print("Invalid response format: Missing offers field");
         return [];
       }
-
       final offers = body["offers"] as List<dynamic>;
       return List<Offer>.from(
           offers.map((offer) => Offer.fromJson(offer as Map<String, dynamic>)));
@@ -96,7 +84,7 @@ class ServerWrapper {
 
   Future<Offer?> addNewOffer(Offer offer) async {
     final body = {
-      "apiKey": UserWrapper.key,
+      "ownerKey": UserWrapper.key,
       "position": offer.position,
       "company": offer.company,
       "city": offer.city,
@@ -104,21 +92,21 @@ class ServerWrapper {
       "phoneNumber": offer.phoneNumber,
       "email": offer.email
     };
-    final request = Request(
+    final request = Request.withHeaderAcceptJson(
         method: RequestMethod.postMethod,
-        path: "/offer",
+        path: "/offers",
         requestBody: body,
-        queryParams: UserWrapper.toQueryMap());
+        headers: UserWrapper.toQueryMap());
 
     final response = await _executor.execute(request);
 
     if (response.statusCode == 200) {
       final body = response.responseBody;
-      if (body["offerId"] == null) {
+      if (body["id"] == null) {
         print("Invalid response format: Missing offerId field");
         return null;
       }
-      final returnedOffer = offer..id = body["offerId"];
+      final returnedOffer = offer..id = body["id"];
       return returnedOffer;
     }
 
@@ -128,7 +116,7 @@ class ServerWrapper {
   }
 
   Future<String> logIn(User user) async {
-    final body = {"login": user.login, "password": user.password};
+    final body = {"username": user.login, "password": user.password};
 
     final request = Request.withContentTypeJson(
         method: RequestMethod.postMethod, path: '/login', requestBody: body);
@@ -149,7 +137,7 @@ class ServerWrapper {
   }
 
   Future<bool> register(User user) async {
-    final body = {"login": user.login, "password": user.password};
+    final body = {"username": user.login, "password": user.password};
 
     final request = Request.withContentTypeJson(
         method: RequestMethod.postMethod, path: '/register', requestBody: body);
@@ -164,11 +152,10 @@ class ServerWrapper {
   }
 
   Future<bool> removeOffer(Offer offer) async {
-    final queryParams = {"offer_id": offer.id};
-    final request = Request.withContentTypeJson(
+    final request = Request.withHeaderAcceptJson(
         method: RequestMethod.deleteMethod,
-        path: '/offer',
-        queryParams: queryParams);
+        path: '/offers/${offer.id}',
+        headers: UserWrapper.toQueryMap());
     final response = await _executor.execute(request);
 
     if (response.statusCode == 200) {
@@ -187,7 +174,7 @@ class Request {
   final String path;
   final Map<String, String> queryParams;
   final Map<String, String> headers;
-  final Map<String, dynamic> requestBody;
+  final Map<String, String> requestBody;
 
   Request(
       {required this.method,
@@ -196,22 +183,21 @@ class Request {
       this.queryParams = const {},
       this.headers = const {}});
 
-  Request.withAcceptJson(
+  Request.withHeaderAcceptJson(
       {required this.method,
       required this.path,
       this.requestBody = const {},
       this.queryParams = const {},
-      this.headers = const {"Accept": "application/json"}});
+      this.headers = const {}}) {
+    headers.addAll({"Content-Type": "application/json"});
+  }
 
   Request.withContentTypeJson(
       {required this.method,
       required this.path,
       this.requestBody = const {},
       this.queryParams = const {},
-      this.headers = const {
-        "Accept": "application/json",
-        "ContentType": "application/json"
-      }});
+      this.headers = const {"Content-Type": "application/json"}});
 }
 
 class ServerResponse {
@@ -222,22 +208,23 @@ class ServerResponse {
 }
 
 class RequestExecutor {
-  String getUrl() => "71a36674-7115-47d3-b5a4-627f135438c1.mock.pstmn.io";
+  String getUrl() =>
+      "127.0.0.1:8000"; // 71a36674-7115-47d3-b5a4-627f135438c1.mock.pstmn.io";
   //"localhost:8000";
 
   Future<ServerResponse> execute(Request request) async {
     try {
-      final url = Uri.https(getUrl(), request.path, request.queryParams);
+      final url = Uri.http(getUrl(), request.path, request.queryParams);
       Response? response;
       switch (request.method) {
         case RequestMethod.getMethod:
           response = await http.get(url, headers: request.headers);
         case RequestMethod.postMethod:
           response = await http.post(url,
-              headers: request.headers, body: request.requestBody);
+              headers: request.headers, body: json.encode(request.requestBody));
         case RequestMethod.deleteMethod:
           response = await http.delete(url,
-              headers: request.headers, body: request.requestBody);
+              headers: request.headers, body: json.encode(request.requestBody));
       }
 
       if (response == null) {

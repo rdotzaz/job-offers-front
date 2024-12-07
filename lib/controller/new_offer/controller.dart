@@ -50,7 +50,8 @@ class NewOfferPageController {
         companyErrorTest == null &&
         cityErrorTest == null &&
         descriptionErrorTest == null &&
-        phoneNumberErrorTest == null;
+        phoneNumberErrorTest == null &&
+        emailErrorTest == null;
 
     final areFiedsNotEmpty = positionController.text.isNotEmpty &&
         companyController.text.isNotEmpty &&
@@ -72,16 +73,24 @@ class NewOfferPageController {
         city: cityController.text,
         description: descriptionController.text,
         phoneNumber: phoneNumberController.text,
-        email: emailController.text,
-        creationDate: DateTime.now(),
-        endDate: DateTime.now()); // TODO - Make proper setting of end date)
+        email: emailController.text);
 
     final addedOffer = await _serverWrapper.addNewOffer(newOffer);
     if (addedOffer != null && addedOffer.id != "id") {
       _submitButtonBloc.add(SuccessEvent());
+      _clearFields();
     } else {
       _submitButtonBloc.add(FailedEvent());
     }
+  }
+
+  void _clearFields() {
+    positionController.clear();
+    companyController.clear();
+    cityController.clear();
+    descriptionController.clear();
+    phoneNumberController.clear();
+    emailController.clear();
   }
 
   Color getColor(SubmitButtonState state) {
